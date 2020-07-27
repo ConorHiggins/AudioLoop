@@ -10,11 +10,26 @@
       </div>
 
       <v-row>
+        <v-slider
+          v-model="playbackSpeed"
+          hide-details
+          min="50"
+          max="2000"
+          label="Speed"
+          class="ml-auto mr-4 speed-slider"/>
+
         <v-btn
           color="dark"
-          class="ml-auto mr-8"
+          class="mx-4"
           @click="toggleState">
           {{buttonText}}
+        </v-btn>
+
+        <v-btn
+          color="dark"
+          class="mr-8"
+          @click="onClickReset">
+          Reset
         </v-btn>
       </v-row>
     </v-app-bar>
@@ -37,14 +52,20 @@
       Sequencer,
     },
 
-    data: () => ({
-      //
-    }),
-
     computed: {
       ...mapState([
-        'isRunning'
+        'isRunning',
+        'speed',
       ]),
+
+      playbackSpeed: {
+        set(s) {
+          this.$store.commit('updateSpeed', s);
+        },
+        get() {
+          return this.speed;
+        }
+      },
 
       buttonText: (vm) => {
         if (vm.isRunning){
@@ -58,25 +79,51 @@
 
     methods: {
       ...mapActions([
-        'togglePlaying'
+        'togglePlaying',
+        'reset',
+        'initTracks',
+        'updateSpeed',
       ]),
 
       toggleState: function(){
         this.togglePlaying(!this.isRunning);
       },
+
+      onClickReset: function(){
+        this.reset();
+        this.$root.$emit('reset');
+      },
+
+      updateSpeedVar: function(){
+        document.documentElement.style.setProperty('--speed', `${this.speed/1000}s`);
+      }
     },
 
     mounted() {
+      this.initTracks();
+      this.updateSpeedVar();
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
     },
+
+    watch: {
+      speed() {
+        this.updateSpeedVar();
+      }
+    }
   };
 </script>
 
 
 <style lang="scss">
-
   * {
     box-sizing: border-box;
   }
 
+  :root {
+    --speed: .5s;
+  }
+
+  .speed-slider {
+    max-width: 240px;
+  }
 </style>

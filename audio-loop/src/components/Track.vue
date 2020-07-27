@@ -1,13 +1,14 @@
 <template>
   <div
     :class="[
-      'sequencer__track', {
-        'sequencer__track--disabled': !enabled
+      'track', {
+        'track--disabled': !enabled
       }
     ]">
     <v-switch
       v-model="enabled"
       inset
+      color="deep-purple"
       class="mx-4"/>
 
     <div
@@ -18,27 +19,39 @@
         :index="index"
         :position="position"/>
     </div>
+
+    <v-slider
+      v-model="track.volume"
+      hide-details
+      min="0"
+      max="100"
+      track-color="deep-purple lighten-5"
+      color="deep-purple"
+      class="mx-4 track__slider"
+    ></v-slider>
   </div>
 </template>
 
 <script>
+  import { mapState } from 'vuex'
   import Step from '../components/Step'
 
   export default {
     name: 'Track',
 
-    props: [
-      'numberOfSteps',
-      'track',
-      'position',
-      'audioCtx'
-    ],
+    props: {
+      track: Object,
+      position: Number,
+      audioCtx: null
+    },
 
     data: () => {
       return {
         enabled: true,
         volume: 10,
-        audioSrc: null
+        audioSrc: null,
+        audioBuffer: null,
+        gainNode: null
       }
     },
 
@@ -47,8 +60,11 @@
     },
 
     computed: {
+      ...mapState([
+        'numberOfSteps'
+      ]),
+
       steps: (vm) => {
-        console.log("steps count is:", vm.numberOfSteps, vm);
         let arr = Array.from(Array(vm.numberOfSteps).keys());
 
         return arr.map(() => {
@@ -56,48 +72,92 @@
             active: false,
           }
         });
+      },
+
+      currentVolume: (vm) => {
+        return (vm.track.volume / 100);
       }
     },
 
     mounted() {
-      const request = new XMLHttpRequest();
-      this.audioSrc = this.audioCtx.createBufferSource();
-
-      request.open('GET', this.track.source, true);
-      request.responseType = 'arraybuffer';
-
-      let ctx = this.audioCtx;
-      let src = this.audioSrc;
-
-      let onSuccess = function(buffer) {
-        src.buffer = buffer;
-        src.connect(ctx.destination);
-      }
-
-      let onError = function(e){
-        console.log("Error with decoding audio data" + e.err);
-      }
-
-      request.onload = function() {
-        const audioData = request.response;
-        ctx.decodeAudioData(audioData, onSuccess, onError);
-      }
-      console.log('now make the request!');
-      request.send();
+      this.loadSound();
+      this.$root.$on('reset', this.resetTrack);
     },
 
     watch: {
-      position: function (currentPosition) {
-        if (currentPosition == 0) {
-          console.log('restart');
-        }
-
+      position(currentPosition) {
         if (this.steps[currentPosition]['active']){
-          console.log('this ones playing!', this.track.source);
-
-          this.audioSrc.start(0);
+          this.playSound()
         }
+      },
+
+      currentVolume(vol) {
+        console.log('volume is now', vol);
+        this.gainNode.gain.value = vol;
       }
     },
+
+    methods: {
+      loadSound(){
+        let self = this;
+        let ctx = self.audioCtx;
+
+        const request = new XMLHttpRequest();
+        request.open('GET', self.track.source, true);
+        request.responseType = 'arraybuffer';
+
+        self.gainNode = ctx.createGain();
+        self.gainNode.gain.value = self.currentVolume;
+
+        const onSuccess = function(buffer) {
+          self.audioBuffer = buffer;
+        }
+
+        const onError = function(e){
+          console.log("Error with decoding audio data" + e.err, e);
+        }
+
+        request.onload = function() {
+          const audioData = request.response;
+          ctx.decodeAudioData(audioData, onSuccess, onError);
+        }
+        request.send();
+      },
+
+      resetTrack(){
+        this.enabled = true;
+      },
+
+      playSound(){
+        if (this.enabled && this.audioBuffer){
+          const ctx = this.audioCtx;
+          let src = this.audioSrc;
+          src = ctx.createBufferSource(); // creates a sound source
+          src.buffer = this.audioBuffer;                    // tell the source which sound to play
+          // src.connect(ctx.destination);       // connect the source to the context's destination (the speakers)
+          src.connect(this.gainNode);
+          this.gainNode.connect(ctx.destination);
+          src.start(0);
+        }
+      }
+    }
   }
 </script>
+
+<style lang="scss" scoped>
+  @import "../styles/colors";
+  @import "../styles/mixins";
+
+  .track {
+    @include flexIt;
+    margin-bottom: 8px;
+
+    &--disabled {
+      opacity: .3;
+    }
+  }
+
+  .track__slider {
+    width: 160px;
+  }
+</style>

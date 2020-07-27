@@ -11,7 +11,6 @@
         <Track
           :track="track"
           :audioCtx="audioCtx"
-          :numberOfSteps="numberOfSteps"
           :position="currentStep"/>
       </div>
     </v-row>
@@ -28,34 +27,7 @@
     data: () => ({
       audioCtx: null,
       ticks: 0,
-      numberOfSteps: 8,
       interval: null,
-      tracks: [
-        {
-          source: '../assets/audio/1.wav'
-        },
-        {
-          source: '../assets/audio/2.wav'
-        },
-        {
-          source: '../assets/audio/3.wav'
-        },
-        {
-          source: '../assets/audio/4.wav'
-        },
-        {
-          source: '../assets/audio/5.wav'
-        },
-        {
-          source: '../assets/audio/6.wav'
-        },
-        {
-          source: '../assets/audio/7.wav'
-        },
-        {
-          source: '../assets/audio/8.wav'
-        },
-      ]
     }),
 
     components: {
@@ -63,9 +35,11 @@
     },
 
     computed: {
-
       ...mapState([
-        'isRunning'
+        'isRunning',
+        'tracks',
+        'numberOfSteps',
+        'speed'
       ]),
 
       currentStep: (vm) => {
@@ -87,7 +61,7 @@
         this.ticks = 0;
         this.interval = setInterval (() => {
           this.ticks++;
-        }, 1000);
+        }, this.speed);
       },
 
       stopPlaying: function(){
@@ -102,7 +76,7 @@
     },
 
     watch: {
-      isRunning: function(newValue) {
+      isRunning(newValue) {
         console.log('updated to ', newValue);
 
         if (newValue){
@@ -110,6 +84,13 @@
         }
         else {
           this.stopPlaying();
+        }
+      },
+
+      speed(){
+        if (this.isRunning){
+          clearInterval(this.interval);
+          this.startPlaying();
         }
       }
     },
@@ -121,64 +102,11 @@
 </script>
 
 <style lang="scss">
-  @mixin flexIt($align: center, $justify: baseline) {
-    display: flex;
-    align-items: $align;
-    justify-content: $justify;
-  }
-
-  $base: ".sequencer";
+  @import "../styles/colors";
+  @import "../styles/mixins";
 
   .sequencer {
     @include flexIt;
     flex-direction: column;
-  }
-
-  #{$base}__track {
-    @include flexIt;
-
-    &--disabled {
-      opacity: .3;
-      cursor: not-allowed;
-
-      #{$base}__step {
-        pointer-events: none;
-      }
-    }
-  }
-
-  #{$base}__step {
-    @include flexIt(center, center);
-    border-radius: 50%;
-    cursor: pointer;
-    border: 4px solid #0100ca;
-    background-color: #eee;
-    width: 40px;
-    height: 40px;
-    margin: 10px;
-    position: relative;
-
-    &:hover {
-      background-color: #0100ca;
-    }
-
-    &--active {
-      background-color: #651fff;
-    }
-
-    &--current {
-      &:after {
-        content: ' ';
-        position: absolute;
-        top: -20px;
-        bottom: -20px;
-        width: 4px;
-        background-color: #ff1744;
-        border-radius: 3px;
-        // border-bottom-right-radius: 3px;
-        // border-bottom-left-radius: 3px;
-        // border-bottom-right-radius: 3px;
-      }
-    }
   }
 </style>
