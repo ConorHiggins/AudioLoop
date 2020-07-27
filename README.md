@@ -1,7 +1,7 @@
 # Looper
 
 ## About
-Fun audio sequencer project written in Vue and using samples from FreeSound.org
+Fun audio sequencer project written in Vue and using samples from FreeSound.org. To test the sequencer, check out this repo and run `yarn serve`
 
 ![](http://g.recordit.co/ZdtbvlSpMI.gif)
 
