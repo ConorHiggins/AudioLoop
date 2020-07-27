@@ -1,24 +1,15 @@
-# audio-loop
+# Looper
 
-## Project setup
-```
-yarn install
-```
+## About
+Fun audio sequencer project written in Vue and using samples from FreeSound.org
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
+![](http://g.recordit.co/ZdtbvlSpMI.gif)
 
-### Compiles and minifies for production
-```
-yarn build
-```
+## Highlights
+- Uses CSS variables to time animations and playhead element correctly
+- Uses pseudo classes to create a playhead
 
-### Lints and fixes files
-```
-yarn lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Stack
+- Vue
+- Vuetify
+- Web Audio API
