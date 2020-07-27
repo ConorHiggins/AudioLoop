@@ -92,7 +92,6 @@
       },
 
       currentVolume(vol) {
-        console.log('volume is now', vol);
         this.gainNode.gain.value = vol;
       }
     },

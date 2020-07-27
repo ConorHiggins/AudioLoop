@@ -21,7 +21,7 @@ export const store = new Vuex.Store({
       const arr = Array.from(Array(state.numberOfTracks).keys());
       state.tracks = arr.map((i) => {
         return {
-          source: `/banks/${state.bank}/${i+1}.wav`,
+          source: `banks/${state.bank}/${i+1}.wav`,
           volume: 80
         }
       });

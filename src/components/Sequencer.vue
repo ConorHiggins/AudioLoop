@@ -72,13 +72,10 @@
 
     mounted: function(){
       this.audioCtx = new AudioContext();
-      console.log("now creating it!", this.audioCtx);
     },
 
     watch: {
       isRunning(newValue) {
-        console.log('updated to ', newValue);
-
         if (newValue){
           this.startPlaying();
         }
